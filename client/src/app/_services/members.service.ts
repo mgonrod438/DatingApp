@@ -7,6 +7,7 @@ import { PaginatedResult } from '../_models/pagination';
 import { User } from '../_models/user';
 import { UserParams } from '../_models/userParams';
 import { AccountService } from './account.service';
+import { getPaginatedResult, getPaginationHeaders } from './paginationHelper';
 
 @Injectable({
   providedIn: 'root'
@@ -52,14 +53,14 @@ export class MembersService {
 
     if(response) return of(response);
 
-    let params = this.getPaginationHeaders(userParams.pageNumber,userParams.pageSize);
+    let params = getPaginationHeaders(userParams.pageNumber,userParams.pageSize);
 
     params = params.append('minAge', userParams.minAge);
     params = params.append('maxAge', userParams.maxAge);
     params = params.append('gender', userParams.gender);
     params = params.append('orderBy', userParams.orderBy);
 
-    return this.getPaginatedResult<Member[]>(this.baseUrl + 'users', params).pipe(
+    return getPaginatedResult<Member[]>(this.baseUrl + 'users', params, this.http).pipe(
       map(response => {
         this.memberCache.set(Object.values(userParams).join('-'), response);
         return response;
@@ -122,18 +123,6 @@ export class MembersService {
     );
   }
 
-  addLike (username: string){
-    return this.http.post(this.baseUrl + 'likes/' + username,{});
-  }
-
-  getLikes(predicate: string, pageNumber: number, pageSize: number){
-    let params = this.getPaginationHeaders(pageNumber, pageSize);
-
-    params = params.append('predicate', predicate);
-
-    return this.getPaginatedResult<Member[]>(this.baseUrl + 'likes', params);
-  }
-
   private getPaginationHeaders(pageNumber: number, pageSize: number) {
     let params = new HttpParams();
 
@@ -143,4 +132,18 @@ export class MembersService {
     }
     return params;
   }
+
+  addLike (username: string){
+    return this.http.post(this.baseUrl + 'likes/' + username,{});
+  }
+
+  getLikes(predicate: string, pageNumber: number, pageSize: number){
+    let params =  getPaginationHeaders(pageNumber, pageSize);
+
+    params = params.append('predicate', predicate);
+
+    return getPaginatedResult<Member[]>(this.baseUrl + 'likes', params, this.http);
+  }
+
+  
 }
