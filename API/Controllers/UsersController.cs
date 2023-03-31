@@ -27,7 +27,7 @@ namespace API.Controllers
             _mapper = mapper;
             _userRepository = userRepository;  
         }
-        [AllowAnonymous]
+
         [HttpGet]
         public async Task<ActionResult<PagedList<MemberDto>>> GetUsers([FromQuery]UserParams userParams){
             
